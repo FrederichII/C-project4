@@ -8,12 +8,12 @@
 using namespace std;
 int main()
 {
-    Matrix<int> mat1 =Matrix<int>(4,3);
-    Matrix<int> mat2 =Matrix<int>(3,5);
-    Matrix<int> mat3 =Matrix<int>(4,5);
-    mat1.AssignRandomValue(1,10,&mat1);
-    mat2.AssignRandomValue(1,10,&mat2);
-    mat3 = mat1 * mat2;
+    Matrix<double> mat1 =Matrix<double>(4,4);
+    Matrix<double> mat2 =Matrix<double>(4,5);
+    Matrix<double> mat3 =Matrix<double>(4,5);
+    mat1.AssignRandomValue(33,126,&mat1);
+    mat2.AssignRandomValue(33,126,&mat2);
+    mat3 = (mat1 * mat2);
     mat1.printMatrix(&mat1);
     printf("\n");
     mat2.printMatrix(&mat2);
@@ -22,5 +22,6 @@ int main()
     else printf("false\n");
     mat3.printMatrix(&mat3);
     mat3.writeMatrixToCSV(&mat3,"result.csv");
+    printf("%c\n",mat3(1,1));
     return 0;
 }
