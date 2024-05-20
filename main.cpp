@@ -8,20 +8,15 @@
 using namespace std;
 int main()
 {
-    Matrix<double> mat1 =Matrix<double>(4,4);
-    Matrix<double> mat2 =Matrix<double>(4,5);
-    Matrix<double> mat3 =Matrix<double>(4,5);
-    mat1.AssignRandomValue(33,126,&mat1);
-    mat2.AssignRandomValue(33,126,&mat2);
-    mat3 = (mat1 * mat2);
-    mat1.printMatrix(&mat1);
-    printf("\n");
-    mat2.printMatrix(&mat2);
-    printf("\n");
-    if(mat3.mat_multiply(&mat1,&mat2,&mat3)) printf("true\n");
-    else printf("false\n");
-    mat3.printMatrix(&mat3);
-    mat3.writeMatrixToCSV(&mat3,"result.csv");
-    printf("%c\n",mat3(1,1));
-    return 0;
+    Matrix<double> mat_double_1 = Matrix<double>(5, 5);
+    Matrix<double> mat_double_2 = Matrix<double>(5, 5);
+    mat_double_1.AssignRandomValue(1, 10, &mat_double_1);
+    mat_double_2.AssignRandomValue(1, 10, &mat_double_2);
+    Matrix<double> mat_double_multiplied = mat_double_1 * mat_double_2;
+    mat_double_1.printMatrix(&mat_double_1);
+    cout << endl;
+    mat_double_2.printMatrix(&mat_double_2);
+    cout << endl;
+    mat_double_multiplied.printMatrix(&mat_double_multiplied);
+    mat_double_multiplied.writeMatrixToCSV(&mat_double_multiplied, "multiplied.csv");
 }

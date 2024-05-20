@@ -6,8 +6,8 @@
 #include <random>
 #include <fstream>
 using namespace std;
-#define TEMPLATE template <typename T>
 
+#define TEMPLATE template <typename T>
 
 class MyChar
 {
@@ -26,6 +26,17 @@ public:
         if (result > 255)
         {
             result = result - 256;
+        }
+        return static_cast<unsigned char>(result);
+    }
+
+    unsigned char operator-(MyChar &other)
+    {
+        int result;
+        result = static_cast<int>(val) - static_cast<int>(other.val);
+        if (result < 0 )
+        {
+            result = result + 256;
         }
         return static_cast<unsigned char>(result);
     }
@@ -95,7 +106,7 @@ public:
         return data[i * cols + j];
     }
 
-    // operator overloading for matrix addition
+    // operator overloading for matrix multiplication
 
     Matrix operator*(Matrix &other)
     {
@@ -117,7 +128,7 @@ public:
         }
     }
 
-    // operator overloading for matrix multiplication
+    // operator overloading for matrix addition
     Matrix operator+(Matrix &other)
     {
         Matrix out = Matrix(rows, other.cols);
@@ -131,6 +142,41 @@ public:
             cout << "exiting..." << endl;
             exit(EXIT_FAILURE);
         }
+    }
+
+    // operator overloading for matrix substraction
+    Matrix operator-(Matrix &other)
+    {
+        Matrix out = Matrix(rows, other.cols);
+        bool result = mat_substract(this, &other, &out);
+        if (result)
+        {
+            return out;
+        }
+        else
+        {
+            cout << "exiting..." << endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // operator overloading to decide whether two matrices are equal
+    bool operator==(Matrix &other)
+    {
+        if (this->rows == other.rows && this->cols == other.cols)
+        {
+
+            for (size_t i = 0; i < this->rows * this->cols; i++)
+            {
+                if (this->data[i] != other.data[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        else
+            return false;
     }
 
     bool mat_multiply(Matrix *pa, Matrix *pb, Matrix *pout)
@@ -177,11 +223,53 @@ public:
             {
                 MyChar *char_a = new MyChar(pa->data[i]);
                 MyChar *char_b = new MyChar(pb->data[i]);
-                pout->data[i] = char_a->get() + char_b->get(); // Operator already overloaded for char add in matrix.hpp
+                pout->data[i] = char_a->get() + char_b->get(); // Operator already overloaded for char add
             }
             pout->data[i] = pa->data[i] + pb->data[i];
         }
         return true;
+    }
+
+    bool mat_substract(Matrix *pa, Matrix *pb, Matrix *pout)
+    {
+        if (pa->cols != pb->rows || pa->rows != pb->rows)
+        {
+            printf("the two matrices have different sizes, cannot be conducting substraction, (rows,cols) of a: (%zu,%zu), (rows,cols) of b: (%zu,%zu),",
+                   pa->rows, pa->cols, pb->rows, pb->rows);
+            return false;
+        }
+        for (size_t i = 0; i < pa->cols * pb->rows; i++)
+        {
+            if (is_same<T, unsigned char>::value)
+            {
+                MyChar *char_a = new MyChar(pa->data[i]);
+                MyChar *char_b = new MyChar(pb->data[i]);
+                pout->data[i] = char_a->get() - char_b->get(); // Operator already overloaded for char substraction
+            }
+            pout->data[i] = pa->data[i] - pb->data[i];
+        }
+        return true;
+    }
+
+
+    Matrix ROI(size_t x1, size_t x2, size_t y1, size_t y2, Matrix * pmat)
+    {
+        if(x2-x1+1>pmat->cols || y2-y1+1>pmat->rows)
+        {
+            cout << "the ROI you desire must be a subset of the matrix" << endl;
+            exit(EXIT_FAILURE);
+        }
+        Matrix result = Matrix(y2-y1+1,x2-x1+1);
+        for(size_t i=y1;i<y2+1;i++)
+        {
+            for(size_t j=x1;j<x2+1;j++)
+            {
+                result.data[(i-y1)*pmat->cols + j - y1] = pmat->data[i*pmat->cols + j];
+            }
+            
+            result.count = pmat->count;
+        }
+        return result;
     }
 
     bool AssignRandomValue(float begin, float end, Matrix *pmat)
