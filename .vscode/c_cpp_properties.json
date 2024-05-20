@@ -10,13 +10,13 @@
                 "/usr/include/c++/11/backward",
                 "/usr/lib/gcc/x86_64-linux-gnu/11/include",
                 "/usr/local/include",
-                "/usr/include/x86_64-linux-gnu",
-                
+                "/usr/include/x86_64-linux-gnu"
             ],
             "defines": [],
             "cStandard": "c17",
             "cppStandard": "gnu++17",
-            "intelliSenseMode": "linux-gcc-x64"
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerPath": "/usr/bin/g++-11"
         }
     ],
     "version": 4

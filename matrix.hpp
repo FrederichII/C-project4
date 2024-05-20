@@ -41,31 +41,29 @@ class Matrix
 
     size_t rows;
     size_t cols;
-    shared_ptr<T> data;
+    T *data;
 
 public:
-    
-
     bool mat_multiply(Matrix *pa, Matrix *pb, Matrix *pout)
     {
-        if (*pa.cols != *pb.cols || *pa.rows != *pb.rows)
+        if (pa->cols!=pb->rows)
         {
-            printf("the two matrices have different sizes, cannot be multiplied, (rows,cols) of a: (%zu,%zu), (rows,cols) of b: (%zu,%zu),",
-                   *pa.rows, *pa.cols, *pb.rows, *pb.cols);
+            printf("the two matrices cannot be multiplied due to incompatible dimensions, (rows,cols) of a: (%zu,%zu), (rows,cols) of b: (%zu,%zu),",
+                   pa->rows, pa->cols, pb->rows, pb->cols);
             return false;
         }
 
         size_t m = pa->rows;
         size_t n = pa->cols;
         size_t p = pb->cols;
-        
+
         for (size_t i = 0; i < m; i++)
         {
             for (size_t j = 0; j < p; j++)
             {
 
-                shared_ptr<T> prowA = make_shared(*(pa->data)[i * m]);
-                shared_ptr<T> prowB = make_shared(*(pb->data)[j]);
+                T *prowA = &(pa->data[i * m]);
+                T *prowB = &(pb->data[j]);
                 pout->data[i * m + j] = 0; // 初始化
                 for (size_t k = 0; k < n; k++)
                 {
@@ -88,11 +86,11 @@ public:
         {
             if (is_same<T, char>::value)
             {
-                MyChar* char_a = new MyChar(pa->data.get()[i]);
-                MyChar* char_b = new MyChar(pb->data.get()[i]);
-                pout->data.get()[i] = char_a->get() + char_b->get(); // Operator already overloaded for char add in matrix.hpp
+                MyChar *char_a = new MyChar(pa->data[i]);
+                MyChar *char_b = new MyChar(pb->data[i]);
+                pout->data[i] = char_a->get() + char_b->get(); // Operator already overloaded for char add in matrix.hpp
             }
-            pout->data.get()[i] = pa->data.get()[i] + pb->data.get()[i];
+            pout->data[i] = pa->data[i] + pb->data[i];
         }
         return true;
     }
@@ -106,15 +104,15 @@ public:
             uniform_int_distribution<T> distribution(begin, end);
             for (size_t i = 0; i < pmat->rows * (pmat->cols); i++)
             {
-                pmat->data.get()[i] = T(distribution(generator));
+                pmat->data[i] = static_cast<T>(distribution(generator));
             }
         }
         else if (is_same<T, float>::value || is_same<T, double>::value)
         {
-            uniform_real_distribution<T> distribution(begin, end);
+            uniform_real_distribution<float> distribution(begin, end);
             for (size_t i = 0; i < pmat->rows * (pmat->cols); i++)
             {
-                pmat->data.get()[i] = T(distribution(generator));
+                pmat->data[i] = static_cast<T>(distribution(generator));
             }
         }
         else if (is_same<T, char>::value)
@@ -122,7 +120,7 @@ public:
             uniform_int_distribution<T> distribution(begin, end);
             for (size_t i = 0; i < pmat->rows * (pmat->cols); i++)
             {
-                pmat->data.get()[i] = T(distribution(generator) % 128);
+                pmat->data[i] = static_cast<int>(distribution(generator)) % 128;
             }
         }
         return true;
@@ -132,7 +130,7 @@ public:
     {
         for (size_t i = 0; i < pmat->rows * pmat->cols; i++)
         {
-            pmat->data.get()[i] = value;
+            pmat->data[i] = value;
         }
         return true;
     }
@@ -145,7 +143,7 @@ public:
             {
                 for (size_t j = 0; j < pmat->cols; j++)
                 {
-                    printf("%d\t", pmat->data.get()[i * pmat->rows + j]);
+                    printf("%d\t", pmat->data[i * pmat->rows + j]);
                 }
                 printf("\n");
             }
@@ -157,7 +155,7 @@ public:
             {
                 for (size_t j = 0; j < pmat->cols; j++)
                 {
-                    printf("%f\t", pmat->data.get()[i * pmat->rows + j]);
+                    printf("%f\t", pmat->data[i * pmat->rows + j]);
                 }
                 printf("\n");
             }
@@ -169,7 +167,7 @@ public:
             {
                 for (size_t j = 0; j < pmat->cols; j++)
                 {
-                    printf("%c\t", pmat->data.get()[i * pmat->rows + j]);
+                    printf("%c\t", pmat->data[i * pmat->rows + j]);
                 }
                 printf("\n");
             }
@@ -182,13 +180,13 @@ public:
         }
     }
 
-    bool writeMatirxToCSV(Matrix *pmat, string filename)
+    bool writeMatrixToCSV(Matrix *pmat,string filename)
     {
         std::ofstream outFile(filename);
 
         if (!outFile)
         {
-            cerr << "Error: Could not open the file!" << endl;
+            std::cerr << "Error: Could not open the file!" << std::endl;
             return false;
         }
 
@@ -196,8 +194,13 @@ public:
         {
             for (size_t j = 0; j < pmat->cols; j++)
             {
-                outFile << pmat(i, j);
+                outFile << pmat->data[i * pmat->rows + j];
+                if (j < pmat->cols - 1)
+                {
+                    outFile << ",";
+                }
             }
+            outFile << std::endl;
         }
 
         outFile.close();
@@ -205,24 +208,29 @@ public:
         if (outFile.fail())
         {
             std::cerr << "Error: Could not close the file!" << std::endl;
+            return false;
         }
+
+        return true;
     }
 
+    // constructor without parameters
     Matrix() : rows(0),
                cols(0)
     {
-        data = make_shared<T>(0);
+        data = (T *)malloc(rows * cols * sizeof(T));
     }
 
+    // constructor with parameters
     Matrix(size_t rows, size_t cols) : rows(rows),
                                        cols(cols)
     {
-        data = make_shared<T>(0);
+        data = (T *)malloc(rows * cols * sizeof(T));
     }
     // copy constructor
     Matrix(const Matrix &other) : rows(other.rows), cols(other.cols), data(new T[other.rows * other.cols]())
     {
-        copy(other.data.get(), other.data.get() + (other.rows * other.cols), data.get());
+        copy(other.data, other.data + (other.rows * other.cols), data);
     }
 
     // operator overloading for element access
