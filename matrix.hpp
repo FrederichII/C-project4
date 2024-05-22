@@ -66,7 +66,7 @@ public:
                cols(0),
                count(1)
     {
-        data = (T *)malloc(rows * cols * sizeof(T));
+        data = new T[rows*cols]();
     }
 
     // constructor with parameters
@@ -74,7 +74,7 @@ public:
                                        cols(cols),
                                        count(1)
     {
-        data = (T *)malloc(rows * cols * sizeof(T));
+        data = new T[rows*cols]();
     }
     // copy constructor
     Matrix(const Matrix &other) : rows(other.rows), cols(other.cols), data(new T[other.rows * other.cols]())
@@ -264,12 +264,13 @@ public:
         {
             for(size_t j=x1;j<x2+1;j++)
             {
-                result.data[(i-y1)*pmat->cols + j - y1] = pmat->data[i*pmat->cols + j];
+                result.data[(i-y1)*(x2-x1+1) + j - x1] = pmat->data[i*pmat->cols + j];
             }
             
             result.count = pmat->count;
         }
         return result;
+        
     }
 
     bool AssignRandomValue(float begin, float end, Matrix *pmat)
